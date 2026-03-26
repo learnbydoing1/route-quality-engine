@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: route-quality-engine
+  datasource:
+    url: jdbc:h2:mem:rqedb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+server:
+  port: 8080
+
+rqe:
+  fare:
+    base-fare: 5.0
+    per-km-rate: 2.5
+    per-minute-rate: 0.5
+  scoring:
+    spatial-weight: 0.40
+    coverage-weight: 0.30
+    temporal-weight: 0.30
+    max-deviation-meters: 50.0
+    max-speed-kmh: 150.0
+    signal-gap-threshold-seconds: 10
