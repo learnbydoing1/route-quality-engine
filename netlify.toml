@@ -1,0 +1,4 @@
+# Netlify serves static files only — this app’s UI lives under Spring Boot’s static resources.
+# Point publish to the folder that contains index.html (fixes “Page not found” when root is wrong).
+[build]
+  publish = "src/main/resources/static"

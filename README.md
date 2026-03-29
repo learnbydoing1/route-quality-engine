@@ -36,7 +36,32 @@ The interactive testing interface is served at the root URL (`http://localhost:8
 mvn test
 ```
 
-144 tests covering unit, integration, and KPI validation.
+180 tests covering unit, integration, and KPI validation.
+
+## Deploy the Admin Dashboard on Netlify
+
+Netlify hosts **static files only**; it does not run the Spring Boot server. The dashboard HTML/CSS/JS lives in `src/main/resources/static/`.
+
+This repo includes `netlify.toml` so the **publish directory** is set correctly. If you still see Netlify’s “Page not found”, open **Site configuration → Build & deploy → Build settings** and set:
+
+- **Publish directory:** `src/main/resources/static`
+- **Build command:** leave empty (not `mvn package` unless you add a step that copies static assets to a known folder)
+
+After deploy, the **UI loads** from Netlify, but API calls (`/api/trips`, `/trips/review`, `/drivers/...`, `/route-quality/...`) target the same Netlify hostname and will **not** work until you either:
+
+1. Run the Spring Boot app elsewhere (Railway, Render, Fly.io, a VPS, etc.) and add **Netlify redirects** that proxy those paths to your backend URL, or  
+2. Open the dashboard from the Spring Boot URL only (`http://localhost:8080` when running locally).
+
+Example proxy rules (replace `https://your-api.example.com` with your real backend base URL) — add under **Site configuration → Redirects** or in `netlify.toml` as `[[redirects]]` entries:
+
+| From | To |
+|------|-----|
+| `/api/*` | `https://your-api.example.com/api/:splat` |
+| `/trips/*` | `https://your-api.example.com/trips/:splat` |
+| `/drivers/*` | `https://your-api.example.com/drivers/:splat` |
+| `/route-quality/*` | `https://your-api.example.com/route-quality/:splat` |
+
+Use status **200** (rewrite/proxy) so the browser still calls same-origin paths.
 
 ## API Endpoints
 
