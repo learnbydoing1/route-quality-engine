@@ -24,10 +24,16 @@ public class RouteQualityReport {
 
     private double trustScore;
     private TrustLevel trustLevel;
+    private double spatialFidelity;
+    private double coverageFidelity;
+    private double temporalFidelity;
 
     private List<AnomalyDto> anomalies;
 
     private FareBreakdown fareBreakdown;
     private BillingDecision billingDecision;
     private String explanation;
+
+    private boolean fareConsistent;
+    private boolean correctedDistanceConsistent;
 }

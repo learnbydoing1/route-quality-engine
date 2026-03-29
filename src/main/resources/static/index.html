@@ -1,0 +1,1841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Route Quality Engine — Admin Dashboard</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0f1117;
+            --surface: #1a1d27;
+            --surface2: #242836;
+            --border: #2e3345;
+            --text: #e4e6ef;
+            --text-muted: #8b8fa3;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --green: #22c55e;
+            --yellow: #eab308;
+            --red: #ef4444;
+            --orange: #f97316;
+            --radius: 12px;
+        }
+
+        [data-theme="light"] {
+            --bg: #f5f5f7;
+            --surface: #ffffff;
+            --surface2: #f0f0f3;
+            --border: #e0e0e5;
+            --text: #1a1a2e;
+            --text-muted: #6b7085;
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --green: #16a34a;
+            --yellow: #ca8a04;
+            --red: #dc2626;
+            --orange: #ea580c;
+        }
+
+        [data-theme="light"] input[type="range"] { background: var(--border); }
+        [data-theme="light"] .di-search input[type="date"] { color-scheme: light; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+
+        header .badge {
+            background: var(--accent);
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 0;
+            min-height: calc(100vh - 57px);
+        }
+
+        .sidebar {
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .main {
+            padding: 24px 32px;
+            overflow-y: auto;
+        }
+
+        .section-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .card {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .card h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card h3 .icon { font-size: 16px; }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        input[type="number"], select {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+            color: var(--text);
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="number"]:focus, select:focus {
+            border-color: var(--accent);
+        }
+
+        .slider-group {
+            margin-bottom: 20px;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .slider-header label {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .slider-value {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--accent);
+            min-width: 50px;
+            text-align: right;
+        }
+
+        .slider-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--bg);
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            border: 2px solid var(--surface);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            transition: transform 0.15s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .presets {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .preset-btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 10px;
+            color: var(--text);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .preset-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .preset-btn.active { border-color: var(--accent); background: rgba(99,102,241,0.1); color: var(--accent); }
+
+        /* Report Styles */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 60vh;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .empty-state .icon { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
+        .empty-state h2 { font-size: 18px; margin-bottom: 8px; color: var(--text); }
+        .empty-state p { font-size: 13px; }
+
+        .report { display: none; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+        }
+
+        .stat-card .label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .stat-card .value {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .stat-card .sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .trust-high { color: var(--green); }
+        .trust-medium { color: var(--yellow); }
+        .trust-low { color: var(--red); }
+
+        .trust-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .trust-badge.high { background: rgba(34,197,94,0.15); color: var(--green); }
+        .trust-badge.medium { background: rgba(234,179,8,0.15); color: var(--yellow); }
+        .trust-badge.low { background: rgba(239,68,68,0.15); color: var(--red); }
+
+        .decision-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .decision-badge.actuals { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+        .decision-badge.hybrid { background: rgba(234,179,8,0.15); color: var(--yellow); border: 1px solid rgba(234,179,8,0.3); }
+        .decision-badge.estimate { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .detail-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+        }
+
+        .detail-card h4 {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 13px;
+        }
+
+        .detail-row .label { color: var(--text-muted); }
+        .detail-row .value { font-weight: 600; }
+
+        .anomaly-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .anomaly-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 14px;
+            background: var(--surface2);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .anomaly-type {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 2px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .anomaly-type.jitter { background: rgba(249,115,22,0.15); color: var(--orange); }
+        .anomaly-type.speed { background: rgba(239,68,68,0.15); color: var(--red); }
+        .anomaly-type.gap { background: rgba(234,179,8,0.15); color: var(--yellow); }
+        .anomaly-type.drift { background: rgba(168,85,247,0.15); color: #a855f7; }
+
+        .score-bar-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .score-bar-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            min-width: 90px;
+        }
+
+        .score-bar-track {
+            flex: 1;
+            height: 8px;
+            background: var(--bg);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .score-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .score-bar-value {
+            font-size: 12px;
+            font-weight: 600;
+            min-width: 42px;
+            text-align: right;
+        }
+
+        .check-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: var(--surface2);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .check-icon { font-size: 16px; flex-shrink: 0; }
+        .check-pass { color: var(--green); }
+        .check-fail { color: var(--red); }
+
+        .module-label {
+            display: inline-block;
+            background: rgba(99,102,241,0.1);
+            border: 1px solid rgba(99,102,241,0.25);
+            color: var(--accent);
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        .sidebar-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 20px;
+            background: var(--bg);
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        .sidebar-tab {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .sidebar-tab.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        .sidebar-tab:hover:not(.active) { color: var(--text); }
+
+        .sidebar-panel { display: none; }
+        .sidebar-panel.active { display: block; }
+
+        .review-filters {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .filter-btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 12px;
+            color: var(--text);
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .filter-btn.active { border-color: var(--accent); background: rgba(99,102,241,0.1); color: var(--accent); }
+
+        .review-list { max-height: 60vh; overflow-y: auto; }
+
+        .review-item {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .review-item:hover { border-color: var(--accent); }
+
+        .review-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .review-item-id {
+            font-family: monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .review-item-badges {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .review-item-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        .review-status-badge {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 3px 8px;
+            border-radius: 4px;
+            letter-spacing: 0.3px;
+        }
+
+        .review-status-badge.not-reviewed { background: rgba(139,143,163,0.15); color: var(--text-muted); }
+        .review-status-badge.pending { background: rgba(234,179,8,0.15); color: var(--yellow); }
+        .review-status-badge.approved { background: rgba(34,197,94,0.15); color: var(--green); }
+        .review-status-badge.rejected { background: rgba(239,68,68,0.15); color: var(--red); }
+
+        .review-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .review-action-btn {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .review-action-btn.approve {
+            background: rgba(34,197,94,0.1);
+            color: var(--green);
+            border-color: rgba(34,197,94,0.3);
+        }
+
+        .review-action-btn.approve:hover {
+            background: rgba(34,197,94,0.25);
+        }
+
+        .review-action-btn.reject {
+            background: rgba(239,68,68,0.1);
+            color: var(--red);
+            border-color: rgba(239,68,68,0.3);
+        }
+
+        .review-action-btn.reject:hover {
+            background: rgba(239,68,68,0.25);
+        }
+
+        .driver-input-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .driver-input-row input {
+            flex: 1;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: var(--text);
+            font-size: 13px;
+            outline: none;
+        }
+
+        .driver-input-row input:focus { border-color: var(--accent); }
+
+        .threshold-control {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 14px;
+            margin-bottom: 16px;
+        }
+
+        .threshold-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .threshold-header label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .threshold-val {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .threshold-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .di-search {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .di-search input[type="text"] {
+            flex: 1;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+            color: var(--text);
+            font-size: 13px;
+            outline: none;
+        }
+
+        .di-search input[type="text"]:focus { border-color: var(--accent); }
+
+        .di-search input[type="date"] {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 10px;
+            color: var(--text);
+            font-size: 12px;
+            outline: none;
+            color-scheme: dark;
+        }
+
+        .di-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            background: var(--accent);
+            color: white;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+
+        .di-btn:hover { background: var(--accent-hover); }
+
+        .di-date-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            align-items: center;
+        }
+
+        .di-date-row label {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .di-driver-list {
+            max-height: calc(100vh - 360px);
+            overflow-y: auto;
+        }
+
+        .di-driver-item {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 6px;
+            cursor: pointer;
+            transition: border-color 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .di-driver-item:hover { border-color: var(--accent); }
+
+        .di-driver-item .driver-name { font-size: 13px; font-weight: 600; }
+        .di-driver-item .driver-trips { font-size: 11px; color: var(--text-muted); }
+
+        .driver-dashboard { display: none; }
+
+        .di-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .di-kpi {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 16px;
+            text-align: center;
+        }
+
+        .di-kpi .kpi-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .di-kpi .kpi-value {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .di-kpi .kpi-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .di-chart-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            margin-bottom: 16px;
+        }
+
+        .di-chart-card h4 {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .di-bar-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .di-bar-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            min-width: 110px;
+            text-align: right;
+        }
+
+        .di-bar-track {
+            flex: 1;
+            height: 20px;
+            background: var(--bg);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .di-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            padding-left: 8px;
+            font-size: 10px;
+            font-weight: 700;
+            color: white;
+            transition: width 0.5s ease;
+            min-width: fit-content;
+        }
+
+        .di-bar-count {
+            font-size: 12px;
+            font-weight: 600;
+            min-width: 40px;
+            text-align: right;
+        }
+
+        .di-stacked-bar {
+            display: flex;
+            height: 28px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .di-stacked-segment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            color: white;
+            transition: width 0.5s ease;
+            min-width: 2px;
+        }
+
+        .di-legend {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .di-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .di-legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+        }
+
+        .di-trend-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .di-trend-badge.improving { background: rgba(34,197,94,0.15); color: var(--green); }
+        .di-trend-badge.stable { background: rgba(99,102,241,0.15); color: var(--accent); }
+        .di-trend-badge.declining { background: rgba(239,68,68,0.15); color: var(--red); }
+
+        .di-two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 1100px) {
+            .di-two-col { grid-template-columns: 1fr; }
+        }
+
+        .explanation-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            font-size: 14px;
+            line-height: 1.7;
+            margin-bottom: 24px;
+        }
+
+        .trip-history {
+            margin-top: 24px;
+        }
+
+        .trip-history-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .trip-history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.15s;
+        }
+
+        .trip-history-item:hover { background: var(--bg); }
+        .trip-history-item .id { font-family: monospace; color: var(--text-muted); }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 12px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .progress-bar {
+            height: 4px;
+            background: var(--bg);
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .progress-bar .fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+
+        @media (max-width: 900px) {
+            .layout { grid-template-columns: 1fr; }
+            .sidebar { border-right: none; border-bottom: 1px solid var(--border); }
+        }
+    </style>
+</head>
+<body>
+
+<header style="display:flex;align-items:center;gap:12px">
+    <h1 style="flex:1">Route Quality Engine</h1>
+    <span class="badge">Sim-to-Real Dashboard</span>
+    <button id="themeToggle" onclick="toggleTheme()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:16px" title="Toggle light/dark theme">
+        <span id="themeIcon">☀️</span>
+    </button>
+</header>
+
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-tabs">
+            <button class="sidebar-tab active" onclick="switchTab('generator')">Generator</button>
+            <button class="sidebar-tab" onclick="switchTab('reviews')">Reviews</button>
+            <button class="sidebar-tab" onclick="switchTab('insights')">Driver Insights</button>
+        </div>
+
+        <div id="generatorPanel" class="sidebar-panel active">
+        <p class="section-title">Module A: Data Generator</p>
+
+        <div class="card">
+            <h3><span class="icon">&#x1F4CD;</span> Route Selection</h3>
+
+            <div class="presets">
+                <button class="preset-btn active" onclick="applyPreset(0)">Riyadh City</button>
+                <button class="preset-btn" onclick="applyPreset(1)">King Fahd Rd</button>
+                <button class="preset-btn" onclick="applyPreset(2)">Airport Run</button>
+                <button class="preset-btn" onclick="applyPreset(3)">Short Trip</button>
+            </div>
+
+            <div class="form-group">
+                <label>Start Point</label>
+                <div class="form-row">
+                    <input type="number" id="startLat" step="0.0001" placeholder="Latitude" value="24.7136">
+                    <input type="number" id="startLng" step="0.0001" placeholder="Longitude" value="46.6753">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>End Point</label>
+                <div class="form-row">
+                    <input type="number" id="endLat" step="0.0001" placeholder="Latitude" value="24.7500">
+                    <input type="number" id="endLng" step="0.0001" placeholder="Longitude" value="46.7200">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Driver ID (optional)</label>
+                <input type="text" id="driverId" placeholder="e.g. D-001" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:13px;outline:none">
+            </div>
+        </div>
+
+        <div class="card">
+            <h3><span class="icon">&#x26A1;</span> Chaos Controls</h3>
+
+            <div class="slider-group">
+                <div class="slider-header">
+                    <label>Jitter Intensity</label>
+                    <span class="slider-value" id="jitterVal">0 m</span>
+                </div>
+                <div class="slider-desc">Inject Gaussian noise to simulate urban canyon GPS bounce</div>
+                <input type="range" id="jitter" min="0" max="100" value="0" oninput="updateSlider('jitter', 'm')">
+                <div class="progress-bar"><div class="fill" id="jitterBar" style="width:0%;background:var(--green)"></div></div>
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-header">
+                    <label>Tunnel Effect</label>
+                    <span class="slider-value" id="tunnelVal">0%</span>
+                </div>
+                <div class="slider-desc">Delete data chunks to simulate signal loss in tunnels</div>
+                <input type="range" id="tunnel" min="0" max="95" value="0" oninput="updateSlider('tunnel', '%')">
+                <div class="progress-bar"><div class="fill" id="tunnelBar" style="width:0%;background:var(--green)"></div></div>
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-header">
+                    <label>Drift Factor</label>
+                    <span class="slider-value" id="driftVal">0 m</span>
+                </div>
+                <div class="slider-desc">Simulate GPS teleportation and device lag</div>
+                <input type="range" id="drift" min="0" max="300" value="0" oninput="updateSlider('drift', 'm')">
+                <div class="progress-bar"><div class="fill" id="driftBar" style="width:0%;background:var(--green)"></div></div>
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-header">
+                    <label>Drift Probability</label>
+                    <span class="slider-value" id="driftProbVal">0%</span>
+                </div>
+                <div class="slider-desc">Chance of drift occurring at each GPS sample</div>
+                <input type="range" id="driftProb" min="0" max="50" value="0" oninput="updateSlider('driftProb', '%')">
+                <div class="progress-bar"><div class="fill" id="driftProbBar" style="width:0%;background:var(--green)"></div></div>
+            </div>
+        </div>
+
+        <button class="btn btn-primary" id="generateBtn" onclick="generateTrip()">
+            Generate Trip & Score
+        </button>
+        <button class="btn" id="seedBtn" onclick="seedDemoData()" style="margin-top:8px;background:var(--surface2);color:var(--text);border:1px solid var(--border);width:100%">
+            🌱 Seed Demo Data (3 Drivers, 13 Trips)
+        </button>
+
+        <div class="trip-history" id="tripHistory" style="display:none">
+            <p class="section-title" style="margin-top:24px">Trip History</p>
+            <div class="trip-history-list" id="tripHistoryList"></div>
+        </div>
+        </div>
+
+        <div id="reviewsPanel" class="sidebar-panel">
+            <p class="section-title">Trip Review System</p>
+
+            <div class="threshold-control">
+                <div class="threshold-header">
+                    <label>Auto-Review Threshold</label>
+                    <span class="threshold-val" id="thresholdVal">50%</span>
+                </div>
+                <div class="threshold-desc">Trips below this trust score are auto-flagged for review (forward-looking)</div>
+                <input type="range" id="thresholdSlider" min="0" max="100" value="50" oninput="updateThresholdPreview()" onchange="saveThreshold()">
+            </div>
+
+            <div class="review-filters">
+                <button class="filter-btn active" onclick="filterReviews(null, this)">All</button>
+                <button class="filter-btn" onclick="filterReviews('PENDING_REVIEW', this)">Pending</button>
+                <button class="filter-btn" onclick="filterReviews('APPROVED', this)">Approved</button>
+                <button class="filter-btn" onclick="filterReviews('REJECTED', this)">Rejected</button>
+                <button class="filter-btn" onclick="filterReviews('NOT_REVIEWED', this)">Not Reviewed</button>
+            </div>
+
+            <div class="review-list" id="reviewList">
+                <div style="text-align:center;color:var(--text-muted);padding:40px 0;font-size:13px">
+                    Loading trips...
+                </div>
+            </div>
+        </div>
+
+        <div id="insightsPanel" class="sidebar-panel">
+            <p class="section-title">Driver Insights</p>
+
+            <div class="di-search">
+                <input type="text" id="diDriverId" placeholder="Driver ID (e.g. D-001)">
+                <button class="di-btn" onclick="loadDriverInsights()">Load</button>
+            </div>
+
+            <div class="di-date-row">
+                <label>From</label>
+                <input type="date" id="diFrom">
+                <label>To</label>
+                <input type="date" id="diTo">
+            </div>
+
+            <p class="section-title" style="margin-top:12px">Known Drivers</p>
+            <div class="di-driver-list" id="diDriverList">
+                <div style="text-align:center;color:var(--text-muted);padding:20px 0;font-size:12px">
+                    Generate trips with Driver IDs to see them here
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div class="empty-state" id="emptyState">
+            <div class="icon">&#x1F6E3;</div>
+            <h2>No Trip Generated Yet</h2>
+            <p>Configure route and chaos parameters, then click "Generate Trip & Score"</p>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="color:var(--text-muted);font-size:13px">Generating trip, injecting chaos, scoring route quality...</p>
+        </div>
+
+        <div class="report" id="report">
+            <div class="stats-grid" id="statsGrid"></div>
+
+            <p class="section-title">Scoring Engine <span class="module-label">Module B</span></p>
+            <div class="detail-grid" id="scoringEngine"></div>
+
+            <p class="section-title">Verification & Decision <span class="module-label">Module C</span></p>
+            <div class="explanation-box" id="explanationBox"></div>
+
+            <p class="section-title">Route Comparison</p>
+            <div class="detail-grid" id="routeDetails"></div>
+
+            <p class="section-title">Fare Breakdown</p>
+            <div class="detail-grid" id="fareDetails"></div>
+
+            <p class="section-title">Detected Anomalies</p>
+            <div class="detail-card" id="anomalyCard" style="margin-bottom:24px">
+                <ul class="anomaly-list" id="anomalyList"></ul>
+            </div>
+
+            <p class="section-title">Consistency Verification</p>
+            <div class="detail-card" id="consistencyCard" style="margin-bottom:24px">
+                <div id="consistencyChecks"></div>
+            </div>
+        </div>
+
+        <div class="driver-dashboard" id="driverDashboard">
+            <div id="diHeader" style="margin-bottom:20px"></div>
+            <div class="di-kpi-grid" id="diKpis"></div>
+            <div class="di-two-col" id="diCharts"></div>
+            <div id="diReasonCodes" style="margin-top:16px"></div>
+        </div>
+    </main>
+</div>
+
+<script>
+const PRESETS = [
+    { name: 'Riyadh City', startLat: 24.7136, startLng: 46.6753, endLat: 24.7500, endLng: 46.7200 },
+    { name: 'King Fahd Rd', startLat: 24.6907, startLng: 46.6850, endLat: 24.7648, endLng: 46.6527 },
+    { name: 'Airport Run', startLat: 24.7136, startLng: 46.6753, endLat: 24.9574, endLng: 46.6989 },
+    { name: 'Short Trip', startLat: 24.7136, startLng: 46.6753, endLat: 24.7180, endLng: 46.6800 }
+];
+
+const tripIds = [];
+
+function applyPreset(idx) {
+    const p = PRESETS[idx];
+    document.getElementById('startLat').value = p.startLat;
+    document.getElementById('startLng').value = p.startLng;
+    document.getElementById('endLat').value = p.endLat;
+    document.getElementById('endLng').value = p.endLng;
+    document.querySelectorAll('.preset-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+}
+
+function updateSlider(id, unit) {
+    const slider = document.getElementById(id);
+    const val = slider.value;
+    const max = slider.max;
+    const pct = (val / max) * 100;
+
+    document.getElementById(id + 'Val').textContent = val + (unit === '%' ? '%' : ' ' + unit);
+
+    const bar = document.getElementById(id + 'Bar');
+    bar.style.width = pct + '%';
+    if (pct < 30) bar.style.background = 'var(--green)';
+    else if (pct < 60) bar.style.background = 'var(--yellow)';
+    else bar.style.background = 'var(--red)';
+}
+
+async function generateTrip() {
+    const btn = document.getElementById('generateBtn');
+    btn.disabled = true;
+    btn.textContent = 'Generating...';
+
+    document.getElementById('emptyState').style.display = 'none';
+    document.getElementById('report').style.display = 'none';
+    document.getElementById('loading').style.display = 'block';
+
+    const driverIdVal = document.getElementById('driverId').value.trim();
+    const body = {
+        startLat: parseFloat(document.getElementById('startLat').value),
+        startLng: parseFloat(document.getElementById('startLng').value),
+        endLat: parseFloat(document.getElementById('endLat').value),
+        endLng: parseFloat(document.getElementById('endLng').value),
+        jitterMeters: parseInt(document.getElementById('jitter').value),
+        tunnelFraction: parseInt(document.getElementById('tunnel').value) / 100.0,
+        driftMeters: parseInt(document.getElementById('drift').value),
+        driftProbability: parseInt(document.getElementById('driftProb').value) / 100.0
+    };
+    if (driverIdVal) body.driverId = driverIdVal;
+
+    try {
+        const tripRes = await fetch('/api/trips/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        const trip = await tripRes.json();
+
+        const reportRes = await fetch('/route-quality/report/' + trip.id);
+        const report = await reportRes.json();
+
+        tripIds.unshift({ id: trip.id, score: report.trustScore, level: report.trustLevel, driverId: trip.driverId });
+        renderReport(report);
+        renderHistory();
+    } catch (e) {
+        alert('Error: ' + e.message);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Generate Trip & Score';
+        document.getElementById('loading').style.display = 'none';
+    }
+}
+
+async function loadReport(tripId) {
+    document.getElementById('emptyState').style.display = 'none';
+    document.getElementById('report').style.display = 'none';
+    document.getElementById('loading').style.display = 'block';
+
+    try {
+        const res = await fetch('/route-quality/report/' + tripId);
+        const report = await res.json();
+        renderReport(report);
+    } catch (e) {
+        alert('Error loading report: ' + e.message);
+    } finally {
+        document.getElementById('loading').style.display = 'none';
+    }
+}
+
+function renderReport(r) {
+    const trustClass = r.trustLevel === 'HIGH' ? 'high' : r.trustLevel === 'MEDIUM' ? 'medium' : 'low';
+    const decisionClass = r.billingDecision === 'USE_ACTUALS' ? 'actuals' : r.billingDecision === 'HYBRID' ? 'hybrid' : 'estimate';
+    const decisionLabel = r.billingDecision === 'USE_ACTUALS' ? 'Bill on Actuals' : r.billingDecision === 'HYBRID' ? 'Hybrid Billing' : 'Bill on Estimate';
+
+    document.getElementById('statsGrid').innerHTML = `
+        <div class="stat-card">
+            <div class="label">Trust Score</div>
+            <div class="value trust-${trustClass}">${r.trustScore}%</div>
+            <div class="sub"><span class="trust-badge ${trustClass}">${r.trustLevel}</span></div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Billing Decision</div>
+            <div class="value" style="font-size:18px;margin-top:4px"><span class="decision-badge ${decisionClass}">${decisionLabel}</span></div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Final Fare</div>
+            <div class="value">${r.fareBreakdown.finalFare.toFixed(2)} SAR</div>
+            <div class="sub">Estimated: ${r.fareBreakdown.estimatedFare.toFixed(2)} SAR</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Anomalies Found</div>
+            <div class="value">${r.anomalies.length}</div>
+            <div class="sub">${r.anomalies.reduce((s,a) => s + a.affectedPoints, 0)} points affected</div>
+        </div>
+    `;
+
+    const barColor = v => v >= 90 ? 'var(--green)' : v >= 50 ? 'var(--yellow)' : 'var(--red)';
+
+    document.getElementById('scoringEngine').innerHTML = `
+        <div class="detail-card">
+            <h4>Trust Score Breakdown</h4>
+            <div class="score-bar-container">
+                <span class="score-bar-label">Spatial</span>
+                <div class="score-bar-track"><div class="score-bar-fill" style="width:${r.spatialFidelity}%;background:${barColor(r.spatialFidelity)}"></div></div>
+                <span class="score-bar-value" style="color:${barColor(r.spatialFidelity)}">${r.spatialFidelity}%</span>
+            </div>
+            <div class="score-bar-container">
+                <span class="score-bar-label">Coverage</span>
+                <div class="score-bar-track"><div class="score-bar-fill" style="width:${r.coverageFidelity}%;background:${barColor(r.coverageFidelity)}"></div></div>
+                <span class="score-bar-value" style="color:${barColor(r.coverageFidelity)}">${r.coverageFidelity}%</span>
+            </div>
+            <div class="score-bar-container">
+                <span class="score-bar-label">Temporal</span>
+                <div class="score-bar-track"><div class="score-bar-fill" style="width:${r.temporalFidelity}%;background:${barColor(r.temporalFidelity)}"></div></div>
+                <span class="score-bar-value" style="color:${barColor(r.temporalFidelity)}">${r.temporalFidelity}%</span>
+            </div>
+            <div style="border-top:1px solid var(--border);padding-top:10px;margin-top:6px">
+                <div class="score-bar-container">
+                    <span class="score-bar-label" style="font-weight:600;color:var(--text)">Weighted Total</span>
+                    <div class="score-bar-track"><div class="score-bar-fill" style="width:${r.trustScore}%;background:${barColor(r.trustScore)}"></div></div>
+                    <span class="score-bar-value" style="color:${barColor(r.trustScore)};font-size:14px">${r.trustScore}%</span>
+                </div>
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Formula: 40% Spatial + 30% Coverage + 30% Temporal</div>
+        </div>
+        <div class="detail-card">
+            <h4>Engine Pipeline</h4>
+            <div class="detail-row"><span class="label">1. Map Matching</span><span class="value" style="color:var(--green)">Completed</span></div>
+            <div style="font-size:11px;color:var(--text-muted);padding:2px 0 8px">Snapped ${r.rawTelemetry.pointCount} raw points to nearest road segments</div>
+            <div class="detail-row"><span class="label">2. Physics Check</span><span class="value" style="color:var(--green)">Completed</span></div>
+            <div style="font-size:11px;color:var(--text-muted);padding:2px 0 8px">Checked speed &gt; 150 km/h, signal gaps &gt; 10s</div>
+            <div class="detail-row"><span class="label">3. Score Calculation</span><span class="value" style="color:var(--green)">Completed</span></div>
+            <div style="font-size:11px;color:var(--text-muted);padding:2px 0 8px">Computed weighted trust score from spatial, coverage, and temporal fidelity</div>
+            <div style="border-top:1px solid var(--border);padding-top:10px;margin-top:6px">
+                <div class="detail-row"><span class="label">Issues Found</span><span class="value">${r.anomalies.length}</span></div>
+                <div class="detail-row"><span class="label">Points Affected</span><span class="value">${r.anomalies.reduce((s,a) => s + a.affectedPoints, 0)}</span></div>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('explanationBox').innerHTML = `
+        <div style="margin-bottom:8px"><strong>Trip ID:</strong> <code style="color:var(--accent);font-size:12px">${r.tripId}</code></div>
+        ${r.explanation}
+    `;
+
+    document.getElementById('routeDetails').innerHTML = `
+        <div class="detail-card">
+            <h4>Planned Route</h4>
+            <div class="detail-row"><span class="label">Distance</span><span class="value">${r.plannedRoute.distanceKm.toFixed(2)} km</span></div>
+            <div class="detail-row"><span class="label">Duration</span><span class="value">${r.plannedRoute.durationMinutes.toFixed(1)} min</span></div>
+            <div class="detail-row"><span class="label">GPS Points</span><span class="value">${r.plannedRoute.pointCount}</span></div>
+        </div>
+        <div class="detail-card">
+            <h4>Raw Telemetry</h4>
+            <div class="detail-row"><span class="label">Distance</span><span class="value">${r.rawTelemetry.distanceKm.toFixed(2)} km</span></div>
+            <div class="detail-row"><span class="label">Duration</span><span class="value">${r.rawTelemetry.durationMinutes.toFixed(1)} min</span></div>
+            <div class="detail-row"><span class="label">GPS Points</span><span class="value">${r.rawTelemetry.pointCount}</span></div>
+        </div>
+        <div class="detail-card">
+            <h4>Corrected Route</h4>
+            <div class="detail-row"><span class="label">Distance</span><span class="value">${r.correctedRoute.distanceKm.toFixed(2)} km</span></div>
+            <div class="detail-row"><span class="label">Duration</span><span class="value">${r.correctedRoute.durationMinutes.toFixed(1)} min</span></div>
+            <div class="detail-row"><span class="label">GPS Points</span><span class="value">${r.correctedRoute.pointCount}</span></div>
+        </div>
+    `;
+
+    document.getElementById('fareDetails').innerHTML = `
+        <div class="detail-card">
+            <h4>Fare Comparison</h4>
+            <div class="detail-row"><span class="label">Estimated Fare</span><span class="value">${r.fareBreakdown.estimatedFare.toFixed(2)} SAR</span></div>
+            <div class="detail-row"><span class="label">Raw Fare</span><span class="value">${r.fareBreakdown.rawFare.toFixed(2)} SAR</span></div>
+            <div class="detail-row" style="padding-top:10px;border-top:1px solid var(--border);margin-top:6px">
+                <span class="label" style="font-weight:600;color:var(--text)">Final Fare</span>
+                <span class="value" style="color:var(--accent);font-size:16px">${r.fareBreakdown.finalFare.toFixed(2)} SAR</span>
+            </div>
+        </div>
+        <div class="detail-card">
+            <h4>Distance Analysis</h4>
+            <div class="detail-row"><span class="label">Planned</span><span class="value">${r.plannedRoute.distanceKm.toFixed(2)} km</span></div>
+            <div class="detail-row"><span class="label">Raw GPS</span><span class="value">${r.rawTelemetry.distanceKm.toFixed(2)} km</span></div>
+            <div class="detail-row"><span class="label">Corrected</span><span class="value">${r.correctedRoute.distanceKm.toFixed(2)} km</span></div>
+            <div class="detail-row"><span class="label">Raw vs Planned</span><span class="value" style="color:${Math.abs(r.rawTelemetry.distanceKm - r.plannedRoute.distanceKm) > 1 ? 'var(--red)' : 'var(--green)'}">${((r.rawTelemetry.distanceKm - r.plannedRoute.distanceKm) / r.plannedRoute.distanceKm * 100).toFixed(1)}%</span></div>
+        </div>
+    `;
+
+    const list = document.getElementById('anomalyList');
+    if (r.anomalies.length === 0) {
+        list.innerHTML = '<li style="padding:12px;color:var(--text-muted);font-size:13px;text-align:center">No anomalies detected — clean GPS data</li>';
+    } else {
+        list.innerHTML = r.anomalies.map(a => {
+            const typeClass = a.type === 'GPS_JITTER' ? 'jitter' : a.type === 'UNREALISTIC_SPEED' ? 'speed' : a.type === 'SIGNAL_GAP' ? 'gap' : 'drift';
+            const typeLabel = a.type.replace('_', ' ');
+            return `<li class="anomaly-item">
+                <span class="anomaly-type ${typeClass}">${typeLabel}</span>
+                <span>${a.description}</span>
+            </li>`;
+        }).join('');
+    }
+
+    const checkIcon = ok => ok ? '<span class="check-icon check-pass">&#x2705;</span>' : '<span class="check-icon check-fail">&#x274C;</span>';
+    const deviation = Math.abs(r.correctedRoute.distanceKm - r.plannedRoute.distanceKm);
+
+    document.getElementById('consistencyChecks').innerHTML = `
+        <div class="check-row">
+            ${checkIcon(r.fareConsistent)}
+            <div>
+                <div style="font-weight:600">Final fare aligns with billing decision</div>
+                <div style="font-size:11px;color:var(--text-muted)">${r.billingDecision === 'USE_ESTIMATE' ? 'Final fare equals estimated fare (low trust override)' : r.billingDecision === 'USE_ACTUALS' ? 'Final fare based on corrected actuals (clean GPS)' : 'Final fare is weighted blend of actuals and estimate'}</div>
+            </div>
+        </div>
+        <div class="check-row">
+            ${checkIcon(r.correctedDistanceConsistent)}
+            <div>
+                <div style="font-weight:600">Corrected distance reflects anomaly handling</div>
+                <div style="font-size:11px;color:var(--text-muted)">Corrected distance (${r.correctedRoute.distanceKm.toFixed(2)} km) deviates ${deviation.toFixed(2)} km from planned (${r.plannedRoute.distanceKm.toFixed(2)} km)</div>
+            </div>
+        </div>
+        <div class="check-row">
+            ${checkIcon(r.fareBreakdown.finalFare > 0)}
+            <div>
+                <div style="font-weight:600">Revenue protection — fare is never $0</div>
+                <div style="font-size:11px;color:var(--text-muted)">Final fare: ${r.fareBreakdown.finalFare.toFixed(2)} SAR${r.billingDecision === 'USE_ESTIMATE' ? ' (reverted to estimate for unreliable GPS)' : ''}</div>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('report').style.display = 'block';
+}
+
+function renderHistory() {
+    const container = document.getElementById('tripHistory');
+    const list = document.getElementById('tripHistoryList');
+    container.style.display = 'block';
+
+    list.innerHTML = tripIds.map(t => {
+        const cls = t.level === 'HIGH' ? 'trust-high' : t.level === 'MEDIUM' ? 'trust-medium' : 'trust-low';
+        const driverTag = t.driverId ? `<span style="font-size:10px;color:var(--text-muted);margin-left:6px">${t.driverId}</span>` : '';
+        return `<div class="trip-history-item" onclick="loadReport('${t.id}')">
+            <span><span class="id">${t.id.substring(0, 8)}...</span>${driverTag}</span>
+            <span class="${cls}" style="font-weight:600">${t.score}%</span>
+        </div>`;
+    }).join('');
+}
+
+function switchTab(tab) {
+    document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.sidebar-panel').forEach(p => p.classList.remove('active'));
+
+    document.getElementById('emptyState').style.display = 'none';
+    document.getElementById('report').style.display = 'none';
+    document.getElementById('driverDashboard').style.display = 'none';
+    document.getElementById('loading').style.display = 'none';
+
+    if (tab === 'generator') {
+        document.querySelector('.sidebar-tab:nth-child(1)').classList.add('active');
+        document.getElementById('generatorPanel').classList.add('active');
+        if (tripIds.length > 0) {
+            loadReport(tripIds[0].id);
+        } else {
+            document.getElementById('emptyState').style.display = 'flex';
+        }
+    } else if (tab === 'reviews') {
+        document.querySelector('.sidebar-tab:nth-child(2)').classList.add('active');
+        document.getElementById('reviewsPanel').classList.add('active');
+        loadThreshold();
+        loadReviews(null, true);
+    } else {
+        document.querySelector('.sidebar-tab:nth-child(3)').classList.add('active');
+        document.getElementById('insightsPanel').classList.add('active');
+        initDateDefaults();
+        loadKnownDrivers(true);
+    }
+}
+
+let currentReviewFilter = null;
+
+async function loadReviews(status, autoSelect) {
+    const list = document.getElementById('reviewList');
+    list.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px 0;font-size:13px">Loading...</div>';
+
+    try {
+        let url = '/trips/review';
+        if (status) url += '?status=' + status;
+        const res = await fetch(url);
+        const trips = await res.json();
+
+        if (trips.length === 0) {
+            list.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px 0;font-size:13px">No trips found</div>';
+            return;
+        }
+
+        if (autoSelect && trips.length > 0) {
+            loadReport(trips[0].id);
+        }
+
+        list.innerHTML = trips.map(t => {
+            const trustClass = t.trustLevel === 'HIGH' ? 'high' : t.trustLevel === 'MEDIUM' ? 'medium' : 'low';
+            const statusClass = t.reviewStatus === 'PENDING_REVIEW' ? 'pending'
+                : t.reviewStatus === 'APPROVED' ? 'approved'
+                : t.reviewStatus === 'REJECTED' ? 'rejected' : 'not-reviewed';
+            const statusLabel = t.reviewStatus.replace('_', ' ');
+            const decisionLabel = !t.billingDecision ? '-' :
+                t.billingDecision === 'USE_ACTUALS' ? 'Actuals' :
+                t.billingDecision === 'HYBRID' ? 'Hybrid' : 'Estimate';
+
+            return `<div class="review-item" onclick="loadReport('${t.id}')">
+                <div class="review-item-header">
+                    <span class="review-item-id">${t.id.substring(0, 8)}...</span>
+                    <span class="review-status-badge ${statusClass}">${statusLabel}</span>
+                </div>
+                <div class="review-item-badges">
+                    <span class="trust-badge ${trustClass}" style="font-size:10px;padding:2px 8px">${t.trustScore != null ? t.trustScore + '%' : '-'}</span>
+                    <span style="font-size:11px;color:var(--text-muted)">${decisionLabel}</span>
+                    ${t.driverId ? '<span style="font-size:11px;color:var(--text-muted)">Driver: ' + t.driverId + '</span>' : ''}
+                </div>
+                <div class="review-actions">
+                    <button class="review-action-btn approve" onclick="event.stopPropagation();reviewTrip('${t.id}','APPROVED')">Approve</button>
+                    <button class="review-action-btn reject" onclick="event.stopPropagation();reviewTrip('${t.id}','REJECTED')">Reject</button>
+                </div>
+            </div>`;
+        }).join('');
+    } catch (e) {
+        list.innerHTML = '<div style="text-align:center;color:var(--red);padding:40px 0;font-size:13px">Error: ' + e.message + '</div>';
+    }
+}
+
+function filterReviews(status, btn) {
+    currentReviewFilter = status;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    loadReviews(status);
+}
+
+async function reviewTrip(tripId, status) {
+    try {
+        const res = await fetch('/trips/' + tripId + '/review', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reviewStatus: status })
+        });
+        if (!res.ok) throw new Error('Failed to update review');
+        loadReviews(currentReviewFilter);
+    } catch (e) {
+        alert('Error: ' + e.message);
+    }
+}
+
+// --- Threshold ---
+async function loadThreshold() {
+    try {
+        const res = await fetch('/trips/review/threshold');
+        const data = await res.json();
+        document.getElementById('thresholdSlider').value = data.threshold;
+        document.getElementById('thresholdVal').textContent = data.threshold + '%';
+    } catch(e) {}
+}
+
+function updateThresholdPreview() {
+    document.getElementById('thresholdVal').textContent = document.getElementById('thresholdSlider').value + '%';
+}
+
+async function saveThreshold() {
+    const val = parseFloat(document.getElementById('thresholdSlider').value);
+    try {
+        await fetch('/trips/review/threshold', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ threshold: val })
+        });
+    } catch(e) { alert('Failed to save threshold'); }
+}
+
+// --- Driver Insights ---
+function initDateDefaults() {
+    const now = new Date();
+    const ago = new Date(now.getTime() - 30*24*60*60*1000);
+    document.getElementById('diTo').value = now.toISOString().split('T')[0];
+    document.getElementById('diFrom').value = ago.toISOString().split('T')[0];
+}
+
+async function loadKnownDrivers(autoSelect) {
+    try {
+        const res = await fetch('/trips/review');
+        const trips = await res.json();
+        const drivers = {};
+        trips.forEach(t => {
+            if (t.driverId) {
+                if (!drivers[t.driverId]) drivers[t.driverId] = { count: 0, avgScore: 0, total: 0 };
+                drivers[t.driverId].count++;
+                if (t.trustScore != null) { drivers[t.driverId].total += t.trustScore; }
+            }
+        });
+
+        const list = document.getElementById('diDriverList');
+        const driverIds = Object.keys(drivers);
+        if (driverIds.length === 0) {
+            list.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px 0;font-size:12px">No drivers found. Generate trips with Driver IDs first.</div>';
+            return;
+        }
+
+        list.innerHTML = driverIds.map(d => {
+            const avg = drivers[d].count > 0 ? (drivers[d].total / drivers[d].count).toFixed(1) : '0';
+            const cls = avg > 90 ? 'trust-high' : avg >= 50 ? 'trust-medium' : 'trust-low';
+            return `<div class="di-driver-item" onclick="document.getElementById('diDriverId').value='${d}';loadDriverInsights()">
+                <div>
+                    <div class="driver-name">${d}</div>
+                    <div class="driver-trips">${drivers[d].count} trips</div>
+                </div>
+                <span class="${cls}" style="font-weight:700;font-size:14px">${avg}%</span>
+            </div>`;
+        }).join('');
+
+        if (autoSelect && driverIds.length > 0) {
+            document.getElementById('diDriverId').value = driverIds[0];
+            loadDriverInsights();
+        }
+    } catch(e) {}
+}
+
+async function loadDriverInsights() {
+    const driverId = document.getElementById('diDriverId').value.trim();
+    if (!driverId) { alert('Enter a Driver ID'); return; }
+
+    const from = document.getElementById('diFrom').value;
+    const to = document.getElementById('diTo').value;
+    const fromISO = from ? new Date(from).toISOString() : '';
+    const toISO = to ? new Date(to + 'T23:59:59').toISOString() : '';
+
+    let qp = '';
+    if (fromISO) qp += '?from=' + fromISO;
+    if (toISO) qp += (qp ? '&' : '?') + 'to=' + toISO;
+
+    document.getElementById('emptyState').style.display = 'none';
+    document.getElementById('report').style.display = 'none';
+    document.getElementById('driverDashboard').style.display = 'none';
+    document.getElementById('loading').style.display = 'block';
+
+    try {
+        const [sumRes, rcRes] = await Promise.all([
+            fetch('/drivers/' + driverId + '/summary' + qp),
+            fetch('/drivers/' + driverId + '/reason-code-summary' + qp)
+        ]);
+        const summary = await sumRes.json();
+        const reasonCodes = await rcRes.json();
+        renderDriverDashboard(summary, reasonCodes);
+    } catch(e) {
+        alert('Error: ' + e.message);
+    } finally {
+        document.getElementById('loading').style.display = 'none';
+    }
+}
+
+function renderDriverDashboard(s, rc) {
+    const trendClass = s.trendIndicator === 'IMPROVING' ? 'improving' : s.trendIndicator === 'DECLINING' ? 'declining' : 'stable';
+    const trendArrow = s.trendIndicator === 'IMPROVING' ? '&#x2197;' : s.trendIndicator === 'DECLINING' ? '&#x2198;' : '&#x2194;';
+    const avgColor = s.averageTrustScore > 90 ? 'var(--green)' : s.averageTrustScore >= 50 ? 'var(--yellow)' : 'var(--red)';
+
+    document.getElementById('diHeader').innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+                <h2 style="font-size:20px;font-weight:700;margin-bottom:4px">Driver: ${s.driverId}</h2>
+                <span style="font-size:12px;color:var(--text-muted)">${new Date(s.periodStart).toLocaleDateString()} — ${new Date(s.periodEnd).toLocaleDateString()}</span>
+            </div>
+            <span class="di-trend-badge ${trendClass}">${trendArrow} ${s.trendIndicator}</span>
+        </div>
+    `;
+
+    document.getElementById('diKpis').innerHTML = `
+        <div class="di-kpi">
+            <div class="kpi-label">Total Trips</div>
+            <div class="kpi-value">${s.totalTrips}</div>
+        </div>
+        <div class="di-kpi">
+            <div class="kpi-label">Avg Trust</div>
+            <div class="kpi-value" style="color:${avgColor}">${s.averageTrustScore}%</div>
+        </div>
+        <div class="di-kpi">
+            <div class="kpi-label">Min / Max</div>
+            <div class="kpi-value" style="font-size:16px"><span style="color:var(--red)">${s.minTrustScore}%</span> / <span style="color:var(--green)">${s.maxTrustScore}%</span></div>
+        </div>
+        <div class="di-kpi">
+            <div class="kpi-label">Total Distance</div>
+            <div class="kpi-value" style="font-size:18px">${s.totalDistanceKm} km</div>
+        </div>
+        <div class="di-kpi">
+            <div class="kpi-label">Low Trust Trips</div>
+            <div class="kpi-value" style="color:${s.lowTrustTripPercentage > 30 ? 'var(--red)' : s.lowTrustTripPercentage > 10 ? 'var(--yellow)' : 'var(--green)'}">${s.lowTrustTripPercentage}%</div>
+        </div>
+        <div class="di-kpi">
+            <div class="kpi-label">Anomalies/Trip</div>
+            <div class="kpi-value" style="font-size:18px">${rc.anomaliesPerTrip}</div>
+        </div>
+    `;
+
+    // Trust Level Distribution
+    const trustColors = { HIGH: 'var(--green)', MEDIUM: 'var(--yellow)', LOW: 'var(--red)' };
+    const totalTrust = Object.values(s.trustLevelDistribution || {}).reduce((a,b) => a+b, 0) || 1;
+    let trustStackedHtml = '<div class="di-stacked-bar">';
+    for (const [level, count] of Object.entries(s.trustLevelDistribution || {})) {
+        const pct = (count / totalTrust * 100).toFixed(0);
+        trustStackedHtml += `<div class="di-stacked-segment" style="width:${pct}%;background:${trustColors[level] || 'var(--accent)'}">${pct > 8 ? pct+'%' : ''}</div>`;
+    }
+    trustStackedHtml += '</div>';
+
+    let trustLegend = '<div class="di-legend">';
+    for (const [level, count] of Object.entries(s.trustLevelDistribution || {})) {
+        trustLegend += `<div class="di-legend-item"><span class="di-legend-dot" style="background:${trustColors[level]}"></span>${level}: ${count}</div>`;
+    }
+    trustLegend += '</div>';
+
+    // Billing Decision Distribution
+    const billColors = { USE_ACTUALS: 'var(--green)', HYBRID: 'var(--yellow)', USE_ESTIMATE: 'var(--red)' };
+    const billLabels = { USE_ACTUALS: 'Actuals', HYBRID: 'Hybrid', USE_ESTIMATE: 'Estimate' };
+    const totalBill = Object.values(s.billingDecisionDistribution || {}).reduce((a,b) => a+b, 0) || 1;
+    let billStackedHtml = '<div class="di-stacked-bar">';
+    for (const [dec, count] of Object.entries(s.billingDecisionDistribution || {})) {
+        const pct = (count / totalBill * 100).toFixed(0);
+        billStackedHtml += `<div class="di-stacked-segment" style="width:${pct}%;background:${billColors[dec] || 'var(--accent)'}">${pct > 8 ? pct+'%' : ''}</div>`;
+    }
+    billStackedHtml += '</div>';
+
+    let billLegend = '<div class="di-legend">';
+    for (const [dec, count] of Object.entries(s.billingDecisionDistribution || {})) {
+        billLegend += `<div class="di-legend-item"><span class="di-legend-dot" style="background:${billColors[dec]}"></span>${billLabels[dec] || dec}: ${count}</div>`;
+    }
+    billLegend += '</div>';
+
+    document.getElementById('diCharts').innerHTML = `
+        <div class="di-chart-card">
+            <h4>Trust Level Distribution</h4>
+            ${trustStackedHtml}
+            ${trustLegend}
+        </div>
+        <div class="di-chart-card">
+            <h4>Billing Decision Distribution</h4>
+            ${billStackedHtml}
+            ${billLegend}
+        </div>
+    `;
+
+    // Reason Codes
+    const anomalyColors = { GPS_JITTER: 'var(--orange)', UNREALISTIC_SPEED: 'var(--red)', SIGNAL_GAP: 'var(--yellow)', DRIFT: '#a855f7' };
+    const maxAnomaly = Math.max(...Object.values(rc.anomalyFrequency || {}), 1);
+
+    let anomalyBars = '';
+    const sortedAnomalies = Object.entries(rc.anomalyFrequency || {}).sort((a,b) => b[1] - a[1]);
+    for (const [type, count] of sortedAnomalies) {
+        const pct = (count / maxAnomaly * 100).toFixed(0);
+        const label = type.replace(/_/g, ' ');
+        const isMost = rc.mostCommonAnomaly === type;
+        anomalyBars += `<div class="di-bar-row">
+            <span class="di-bar-label">${label}${isMost ? ' *' : ''}</span>
+            <div class="di-bar-track">
+                <div class="di-bar-fill" style="width:${pct}%;background:${anomalyColors[type] || 'var(--accent)'}"></div>
+            </div>
+            <span class="di-bar-count">${count}</span>
+        </div>`;
+    }
+
+    if (sortedAnomalies.length === 0) {
+        anomalyBars = '<div style="text-align:center;color:var(--text-muted);padding:20px;font-size:13px">No anomalies detected</div>';
+    }
+
+    const rcBillHtml = Object.entries(rc.billingDecisionDistribution || {}).map(([dec, count]) => {
+        return `<div class="detail-row"><span class="label">${billLabels[dec] || dec}</span><span class="value">${count}</span></div>`;
+    }).join('');
+
+    document.getElementById('diReasonCodes').innerHTML = `
+        <div class="di-two-col">
+            <div class="di-chart-card">
+                <h4>Anomaly Frequency ${rc.mostCommonAnomaly ? '(* = most common)' : ''}</h4>
+                ${anomalyBars}
+                <div style="margin-top:12px;border-top:1px solid var(--border);padding-top:10px">
+                    <div class="detail-row"><span class="label">Total Anomalies</span><span class="value">${rc.totalAnomalies}</span></div>
+                    <div class="detail-row"><span class="label">Anomalies per Trip</span><span class="value">${rc.anomaliesPerTrip}</span></div>
+                </div>
+            </div>
+            <div class="di-chart-card">
+                <h4>Reason Code Insights</h4>
+                <div class="detail-row"><span class="label">Low-Trust Trips</span><span class="value" style="color:var(--red)">${rc.lowTrustTripCount} (${rc.lowTrustTripPercentage}%)</span></div>
+                <div class="detail-row"><span class="label">Total Trips Analyzed</span><span class="value">${rc.totalTrips}</span></div>
+                <div style="margin-top:12px;border-top:1px solid var(--border);padding-top:10px">
+                    <h4 style="border:none;padding:0;margin-bottom:10px">Billing Decisions</h4>
+                    ${rcBillHtml || '<div style="color:var(--text-muted);font-size:13px">No data</div>'}
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('driverDashboard').style.display = 'block';
+}
+
+// --- Theme Switcher ---
+function toggleTheme() {
+    const html = document.documentElement;
+    const isCurrentlyDark = html.getAttribute('data-theme') !== 'light';
+    const next = isCurrentlyDark ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('rqe-theme', next);
+    document.getElementById('themeIcon').textContent = next === 'light' ? '🌙' : '☀️';
+}
+(function restoreTheme() {
+    const saved = localStorage.getItem('rqe-theme');
+    if (saved) {
+        document.documentElement.setAttribute('data-theme', saved);
+        const icon = document.getElementById('themeIcon');
+        if (icon) icon.textContent = saved === 'light' ? '🌙' : '☀️';
+    }
+})();
+
+// --- Seed Demo Data ---
+async function seedDemoData() {
+    const btn = document.getElementById('seedBtn');
+    btn.disabled = true;
+    btn.textContent = 'Seeding...';
+    try {
+        const res = await fetch('/api/trips/seed', { method: 'POST' });
+        if (!res.ok) throw new Error('Seed failed');
+        const result = await res.json();
+        btn.textContent = `Seeded ${result.totalTrips} trips!`;
+        setTimeout(() => {
+            btn.disabled = false;
+            btn.textContent = '🌱 Seed Demo Data (3 Drivers, 13 Trips)';
+        }, 2000);
+        switchTab('insights');
+    } catch (e) {
+        btn.textContent = 'Error: ' + e.message;
+        setTimeout(() => {
+            btn.disabled = false;
+            btn.textContent = '🌱 Seed Demo Data (3 Drivers, 13 Trips)';
+        }, 2000);
+    }
+}
+</script>
+</body>
+</html>

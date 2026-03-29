@@ -32,9 +32,54 @@ The engine is a Spring Boot monolith organized into three logical modules that f
 - **Deterministic chaos**: `ChaosInjector` accepts an optional `Random` seed for reproducible test scenarios.
 - **Stateless scoring**: Reports are computed on-demand from stored data, ensuring consistency.
 
+## Phase 2: Operational Extensions
+
+Phase 2 extends the engine with three new modules for operational use cases, built on top of persisted scoring data.
+
+```
+[Phase 1 Pipeline] --> [Persisted Scoring on Trip Entity]
+                              |
+            +-----------------+-----------------+
+            |                 |                 |
+    [Trip Review System] [Driver Summary] [Reason Codes]
+```
+
+### New API Endpoints
+
+| Endpoint | Controller | Purpose |
+|----------|-----------|---------|
+| `GET /trips/review` | `TripReviewController` | List trips for review with optional status filter |
+| `POST /trips/{id}/review` | `TripReviewController` | Update review status (approve/reject) |
+| `GET /drivers/{driverId}/summary` | `DriverController` | Aggregated driver quality metrics |
+| `GET /drivers/{driverId}/reason-code-summary` | `DriverController` | Anomaly frequency analysis per driver |
+
+### New Components
+
+| Component | Responsibility |
+|-----------|---------------|
+| `TripReviewController` | Review workflow endpoints at `/trips` (separate from `/api/trips`) |
+| `DriverController` | Driver analytics endpoints at `/drivers` |
+| `DriverService` | Aggregation logic: avg/min/max trust scores, trend computation, anomaly frequency analysis |
+| `ReviewStatus` enum | NOT_REVIEWED, PENDING_REVIEW, APPROVED, REJECTED |
+
+### Data Flow for Phase 2
+
+1. **Trip Generation** (modified): `generateTrip()` now runs the scoring pipeline and persists `trustScore`, `trustLevel`, `billingDecision`, and auto-assigned `reviewStatus` on the Trip entity
+2. **Review System**: Ops users query trips by review status, approve/reject individually
+3. **Driver Summary**: Aggregates Trip entity data for a driver over a time range — computes statistical metrics and trend indicator
+4. **Reason Codes**: Joins Trip and Anomaly tables for a driver — computes anomaly type frequency and distribution
+
+### Backward Compatibility
+
+- Phase 1 controllers, `buildReport()`, and all existing endpoints are unmodified
+- New Trip entity fields are nullable — existing creation patterns still work
+- New endpoints use distinct paths (`/trips/`, `/drivers/`) to avoid collision with `/api/trips/`
+- All 144 Phase 1 tests pass without modification
+
 ## Scalability Considerations
 
 - The pipeline architecture allows each module to be extracted into a separate microservice with message queues between stages.
 - GPS point storage could migrate to a time-series database (e.g., TimescaleDB) for production workloads.
 - Map matching could be upgraded to use OSRM's match API for real road-network snapping.
 - Trust score weights are externalized in `application.yaml` for tuning without code changes.
+- Phase 2 aggregation queries could be optimized with database-level aggregation (JPQL/native queries) for large datasets, but in-memory stream processing is simpler and sufficient for current scale.

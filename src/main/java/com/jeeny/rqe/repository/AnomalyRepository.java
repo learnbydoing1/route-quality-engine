@@ -12,5 +12,7 @@ public interface AnomalyRepository extends JpaRepository<Anomaly, UUID> {
 
     List<Anomaly> findByTripId(UUID tripId);
 
+    List<Anomaly> findByTripIdIn(List<UUID> tripIds);
+
     void deleteByTripId(UUID tripId);
 }

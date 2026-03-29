@@ -18,7 +18,17 @@ mvn clean package
 mvn spring-boot:run
 ```
 
-The application starts on `http://localhost:8080`.
+The application starts on `http://localhost:8080`. Open this URL in a browser to access the **Admin Dashboard**.
+
+### Admin Dashboard
+
+The interactive testing interface is served at the root URL (`http://localhost:8080`). It provides:
+
+- **Route Selection** — Preset routes (Riyadh City, King Fahd Rd, Airport Run, Short Trip) or custom lat/lng coordinates
+- **Chaos Control Sliders** — Jitter Intensity, Tunnel Effect, Drift Factor, and Drift Probability with real-time visual feedback
+- **One-Click Trip Generation & Scoring** — Generates synthetic telemetry, injects chaos, runs the scoring engine, and displays the full quality report
+- **Report Visualization** — Trust score, billing decision, fare breakdown, route distance comparison, and anomaly list
+- **Trip History** — Click any previous trip to reload its report
 
 ### Run Tests
 

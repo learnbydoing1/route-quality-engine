@@ -33,3 +33,5 @@ rqe:
     max-deviation-meters: 50.0
     max-speed-kmh: 150.0
     signal-gap-threshold-seconds: 10
+  review:
+    auto-review-threshold: 50.0

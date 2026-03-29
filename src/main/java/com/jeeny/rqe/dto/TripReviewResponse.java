@@ -1,7 +1,6 @@
 package com.jeeny.rqe.dto;
 
 import com.jeeny.rqe.model.BillingDecision;
-import com.jeeny.rqe.model.ChaosConfig;
 import com.jeeny.rqe.model.ReviewStatus;
 import com.jeeny.rqe.model.TrustLevel;
 import lombok.AllArgsConstructor;
@@ -16,20 +15,13 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TripResponse {
+public class TripReviewResponse {
 
     private UUID id;
-    private double startLat;
-    private double startLng;
-    private double endLat;
-    private double endLng;
-    private double plannedDistanceKm;
-    private double plannedDurationMinutes;
-    private ChaosConfig chaosConfig;
-    private Instant createdAt;
     private String driverId;
     private Double trustScore;
     private TrustLevel trustLevel;
     private BillingDecision billingDecision;
     private ReviewStatus reviewStatus;
+    private Instant createdAt;
 }

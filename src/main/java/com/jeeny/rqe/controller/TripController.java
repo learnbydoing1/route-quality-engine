@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -33,5 +34,10 @@ public class TripController {
     @GetMapping("/{tripId}")
     public ResponseEntity<TripResponse> getTrip(@PathVariable UUID tripId) {
         return ResponseEntity.ok(tripService.getTrip(tripId));
+    }
+
+    @PostMapping("/seed")
+    public ResponseEntity<Map<String, Object>> seedDemoData() {
+        return ResponseEntity.status(HttpStatus.CREATED).body(tripService.seedDemoData());
     }
 }

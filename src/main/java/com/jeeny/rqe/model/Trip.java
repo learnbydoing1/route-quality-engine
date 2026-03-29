@@ -38,4 +38,19 @@ public class Trip {
 
     @Builder.Default
     private Instant createdAt = Instant.now();
+
+    private String driverId;
+
+    @Column(name = "trust_score")
+    private Double trustScore;
+
+    @Enumerated(EnumType.STRING)
+    private TrustLevel trustLevel;
+
+    @Enumerated(EnumType.STRING)
+    private BillingDecision billingDecision;
+
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private ReviewStatus reviewStatus = ReviewStatus.NOT_REVIEWED;
 }

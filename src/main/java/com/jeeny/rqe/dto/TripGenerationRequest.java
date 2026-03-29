@@ -41,4 +41,6 @@ public class TripGenerationRequest {
     @Min(0) @Max(1)
     @Builder.Default
     private double driftProbability = 0.0;
+
+    private String driverId;
 }
