@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/trips")
@@ -38,6 +39,8 @@ public class TripController {
 
     @PostMapping("/seed")
     public ResponseEntity<Map<String, Object>> seedDemoData() {
-        return ResponseEntity.status(HttpStatus.CREATED).body(tripService.seedDemoData());
+        CompletableFuture.runAsync(() -> tripService.seedDemoData());
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
+                .body(Map.of("status", "seeding", "message", "Generating 13 trips in background. Refresh in ~30 seconds."));
     }
 }

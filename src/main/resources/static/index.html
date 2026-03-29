@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1805,29 +1805,26 @@ function toggleTheme() {
     document.getElementById('themeIcon').textContent = next === 'light' ? '🌙' : '☀️';
 }
 (function restoreTheme() {
-    const saved = localStorage.getItem('rqe-theme');
-    if (saved) {
-        document.documentElement.setAttribute('data-theme', saved);
-        const icon = document.getElementById('themeIcon');
-        if (icon) icon.textContent = saved === 'light' ? '🌙' : '☀️';
-    }
+    const saved = localStorage.getItem('rqe-theme') || 'light';
+    document.documentElement.setAttribute('data-theme', saved);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.textContent = saved === 'light' ? '🌙' : '☀️';
 })();
 
 // --- Seed Demo Data ---
 async function seedDemoData() {
     const btn = document.getElementById('seedBtn');
     btn.disabled = true;
-    btn.textContent = 'Seeding...';
+    btn.textContent = 'Seeding... please wait ~30s';
     try {
         const res = await fetch('/api/trips/seed', { method: 'POST' });
         if (!res.ok) throw new Error('Seed failed');
-        const result = await res.json();
-        btn.textContent = `Seeded ${result.totalTrips} trips!`;
+        btn.textContent = 'Seeding in progress...';
         setTimeout(() => {
             btn.disabled = false;
             btn.textContent = '🌱 Seed Demo Data (3 Drivers, 13 Trips)';
-        }, 2000);
-        switchTab('insights');
+            switchTab('insights');
+        }, 25000);
     } catch (e) {
         btn.textContent = 'Error: ' + e.message;
         setTimeout(() => {
