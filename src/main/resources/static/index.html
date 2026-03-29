@@ -1628,8 +1628,8 @@ async function loadDriverInsights() {
 
     const from = document.getElementById('diFrom').value;
     const to = document.getElementById('diTo').value;
-    const fromISO = from ? new Date(from).toISOString() : '';
-    const toISO = to ? new Date(to + 'T23:59:59').toISOString() : '';
+    const fromISO = from ? from + 'T00:00:00Z' : '';
+    const toISO = to ? to + 'T23:59:59Z' : '';
 
     let qp = '';
     if (fromISO) qp += '?from=' + fromISO;
